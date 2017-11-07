@@ -33,11 +33,12 @@ Steps to launch the MyReads App:
 API Endpoints used in the MyReads App:
 --------------------------------------
 Endpoint : https://reactnd-books-api.udacity.com
-GET /status
-GET /books
-GET /books/:id
-PUT /books/:id { shelf }
-POST /search { query, maxResults }
+1. GET /status
+2. GET /books
+3. GET /books/:id
+4. PUT /books/:id { shelf }
+5. POST /search { query, maxResults }
+
 
 
 Contact Me -
