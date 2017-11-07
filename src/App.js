@@ -1,6 +1,6 @@
 import React from 'react'
 import * as BooksAPI from './BooksAPI'
-import { Route, Link } from 'react-router-dom'
+import { Route } from 'react-router-dom'
 import SearchBooks from './SearchBooks'
 import BooksHome from './BooksHome'
 import './App.css'
@@ -165,22 +165,22 @@ class BooksApp extends React.Component {
         <Route exact path='/search' render={() => (
           <SearchBooks 
           allBooks={this.state.allBooks}
-          shelfBooks = {this.state.shelfBooks}
-          addCurrBooks = {this.addToCurrentList}
-          addWantBooks = {this.addToWantToList}
-          addReadBooks = {this.addToReadList}
-          removeBooks = {this.addToRemoveList}          
+          shelfBooks={this.state.shelfBooks}
+          addCurrBooks={this.addToCurrentList}
+          addWantBooks={this.addToWantToList}
+          addReadBooks={this.addToReadList}
+          removeBooks={this.addToRemoveList}          
           />
         )}/>
 
         <Route exact path='/' render={() => (
           <BooksHome 
             allBooks={this.state.allBooks}
-            shelfBooks = {this.state.shelfBooks}
-            addCurrBooks = {this.addToCurrentList}
-            addWantBooks = {this.addToWantToList}
-            addReadBooks = {this.addToReadList}
-            removeBooks = {this.addToRemoveList}
+            shelfBooks={this.state.shelfBooks}
+            addCurrBooks={this.addToCurrentList}
+            addWantBooks={this.addToWantToList}
+            addReadBooks={this.addToReadList}
+            removeBooks={this.addToRemoveList}
           />
         )}/>
       </div>
