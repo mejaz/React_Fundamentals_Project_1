@@ -6,156 +6,39 @@ import BooksHome from './BooksHome'
 import './App.css'
 
 class BooksApp extends React.Component {
-  state = {
-    allBooks : [],
-    shelfBooks : {
-      currentlyReadingBookIds : [],
-      wantToReadBookIds : [],
-      readBookIds : []
+  constructor(props) {
+    super(props)
+    this.state = {
+      allBooks : []
     }
   }
 
   componentDidMount() {
     BooksAPI.getAll().then((books) => {
-
-      var newCurBooks = this.state.shelfBooks.currentlyReadingBookIds
-      var newWanRdBooks = this.state.shelfBooks.wantToReadBookIds
-      var readBooks = this.state.shelfBooks.readBookIds
-
-      for(var x in books) {
-
-        if(books[x].shelf === "currentlyReading") {
-
-          newCurBooks = newCurBooks.concat([books[x].id])
-
-        } else if(books[x].shelf === "wantToRead") {
-
-          newWanRdBooks = newWanRdBooks.concat([books[x].id])
-
-        } else if(books[x].shelf === "read") {
-
-          readBooks = readBooks.concat([books[x].id])
-        }
-      }
-
-      console.log(newCurBooks)
       this.setState({
-        allBooks : books,
-        shelfBooks : {
-          currentlyReadingBookIds : newCurBooks,
-          wantToReadBookIds : newWanRdBooks,
-          readBookIds : readBooks
-        }
+        allBooks : books
       })
     })
   }
 
-  addToCurrentList = (book) => {
-
-    var newShelfBooks = this.state.shelfBooks
-
-    var newWantReadBooks = newShelfBooks.wantToReadBookIds.slice()
-    if (newWantReadBooks.indexOf(book.id) > -1) {
-      newWantReadBooks.splice(newWantReadBooks.indexOf(book.id), 1)
-    }
-
-    var newReadBooks = newShelfBooks.readBookIds.slice()
-    if (newReadBooks.indexOf(book.id) > -1) {
-      newReadBooks.splice(newReadBooks.indexOf(book.id), 1)
-    }
-
-    newShelfBooks.currentlyReadingBookIds = newShelfBooks.currentlyReadingBookIds.concat([book.id])
-    newShelfBooks.wantToReadBookIds = newWantReadBooks
-    newShelfBooks.readBookIds = newReadBooks
-
-    BooksAPI.update(book, "currentlyReading")
-
-    this.setState({
-      shelfBooks : newShelfBooks
-    })
-  }
-
-  addToWantToList = (book) => {
-
-    var newShelfBooks = this.state.shelfBooks
-
-    console.log(newShelfBooks.currentlyReadingBookIds)
-
-    var newCurReadBooks = newShelfBooks.currentlyReadingBookIds.slice()
-    if (newCurReadBooks.indexOf(book.id) > -1) {
-      newCurReadBooks.splice(newCurReadBooks.indexOf(book.id), 1)
-    }
-
-    var newReadBooks = newShelfBooks.readBookIds.slice()
-    if (newReadBooks.indexOf(book.id) > -1) {
-      newReadBooks.splice(newReadBooks.indexOf(book.id), 1)
-    }
-
-
-    newShelfBooks.wantToReadBookIds = newShelfBooks.wantToReadBookIds.concat([book.id])
-    newShelfBooks.currentlyReadingBookIds = newCurReadBooks
-    newShelfBooks.readBookIds = newReadBooks
-    
-    BooksAPI.update(book, "wantToRead")
-
-    this.setState({
-      shelfBooks : newShelfBooks
-    })
-  }
-
-  addToReadList = (book) => {
-
-    var newShelfBooks = this.state.shelfBooks
-
-    var newCurReadBooks = newShelfBooks.currentlyReadingBookIds.slice()
-    if (newCurReadBooks.indexOf(book.id) > -1) {
-      newCurReadBooks.splice(newCurReadBooks.indexOf(book.id), 1)
-    }
-
-    var newWantReadBooks = newShelfBooks.wantToReadBookIds.slice()
-    if (newWantReadBooks.indexOf(book.id) > -1) {
-      newWantReadBooks.splice(newWantReadBooks.indexOf(book.id), 1)
-    }
-
-    newShelfBooks.readBookIds = newShelfBooks.readBookIds.concat([book.id])
-    newShelfBooks.currentlyReadingBookIds = newCurReadBooks
-    newShelfBooks.wantToReadBookIds = newWantReadBooks
-
-    BooksAPI.update(book, "read")
-
-    this.setState({
-      shelfBooks : newShelfBooks
-    })
-  }
-
-  addToRemoveList = (book) => {
-
-    var newShelfBooks = this.state.shelfBooks
-
-    var newCurReadBooks = newShelfBooks.currentlyReadingBookIds.slice()
-    if (newCurReadBooks.indexOf(book.id) > -1) {
-      newCurReadBooks.splice(newCurReadBooks.indexOf(book.id), 1)
-    }
-
-    var newWantReadBooks = newShelfBooks.wantToReadBookIds.slice()
-    if (newWantReadBooks.indexOf(book.id) > -1) {
-      newWantReadBooks.splice(newWantReadBooks.indexOf(book.id), 1)
-    }
-
-    var newReadBooks = newShelfBooks.readBookIds.slice()
-    if (newReadBooks.indexOf(book.id) > -1) {
-      newReadBooks.splice(newReadBooks.indexOf(book.id), 1)
-    }
-
-    newShelfBooks.currentlyReadingBookIds = newCurReadBooks
-    newShelfBooks.wantToReadBookIds = newWantReadBooks
-    newShelfBooks.readBookIds = newReadBooks
-
-    BooksAPI.update(book, "")
-
-    this.setState({
-      shelfBooks : newShelfBooks
-    })
+  updateBook = (book, shelf) => {
+    var books = this.state.allBooks
+    BooksAPI.update(book, shelf).then((res) => {
+      
+        if((books.filter((b) => b.id === book.id)).length > 0) {
+          console.log("book already present")
+          books[books.indexOf(book)].shelf = shelf
+        } else {
+          console.log("book to be added")
+          const newBook = book
+          newBook['shelf'] = shelf
+          books.push(newBook)
+        }
+        
+        this.setState({
+          allBooks : books
+        })
+      })
   }
 
 
@@ -165,22 +48,13 @@ class BooksApp extends React.Component {
         <Route exact path='/search' render={() => (
           <SearchBooks 
           allBooks={this.state.allBooks}
-          shelfBooks={this.state.shelfBooks}
-          addCurrBooks={this.addToCurrentList}
-          addWantBooks={this.addToWantToList}
-          addReadBooks={this.addToReadList}
-          removeBooks={this.addToRemoveList}          
+          updateBook={this.updateBook}        
           />
         )}/>
-
         <Route exact path='/' render={() => (
           <BooksHome 
             allBooks={this.state.allBooks}
-            shelfBooks={this.state.shelfBooks}
-            addCurrBooks={this.addToCurrentList}
-            addWantBooks={this.addToWantToList}
-            addReadBooks={this.addToReadList}
-            removeBooks={this.addToRemoveList}
+            updateBook={this.updateBook}
           />
         )}/>
       </div>

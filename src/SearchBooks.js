@@ -1,111 +1,80 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
+import * as BooksAPI from './BooksAPI'
+import Book from './Book'
 
 class SearchBooks extends Component {
   
-  state = {
-    query : ''
+  constructor(props) {
+    super(props)
+    this.state = {
+      query : '',
+      books : []
+    }
   }
 
-  onQueryUpdate = (query) => (
+  onQueryUpdate = (event) => {
+    const query = event.target.value
+    console.log(query)
+
     this.setState({
       query : query
     })
-  )
 
-  checkShelf = (book, shelfBooks) => {
-    if (shelfBooks.currentlyReadingBookIds.indexOf(book.id) > -1) {
-      return "currentlyReading"
-    } else if (shelfBooks.wantToReadBookIds.indexOf(book.id) > -1){
-      return "wantToRead"
-    } else if (shelfBooks.readBookIds.indexOf(book.id) > -1) {
-      return "read"
+    if(query) {
+
+      BooksAPI.search(query, 10).then((books) => {
+
+        books.length > 0 ? this.setState({books : books}) : this.setState({books : []})
+
+      })
     } else {
-      return "none"
+      this.setState({books : []})
     }
+
   }
 
-  changeHandler = (e, book, addCurrBooks, addWantBooks, addReadBooks, removeBooks) => {
-    if (e.target.value === "currentlyReading") {
-      addCurrBooks(book)
-    } else if (e.target.value === "wantToRead") {
-      addWantBooks(book)
-    } else if (e.target.value === "read") {
-      addReadBooks(book) 
-    } else {
-      removeBooks(book)
-    }
-  }
+
 
 	render() {
 
-    const { allBooks, shelfBooks, addCurrBooks, addWantBooks, addReadBooks, removeBooks } = this.props
-    const {query} = this.state
-
-    let showingBooks
-
-    if (query === '') {
-      showingBooks = allBooks
-    } else {
-      const match = new RegExp(query, 'i')
-      showingBooks = allBooks.filter((book) => (match.test(book.title)|| match.test(book.authors[0])))
-    }
+    const {allBooks, updateBook} = this.props
+    const {query, books} = this.state
 
 
 		return (
 
-          <div className="search-books">
-            <div className="search-books-bar">
-              <Link className="close-search" to='/'>Close</Link>
-              <div className="search-books-input-wrapper">
-                {/*
-                  NOTES: The search from BooksAPI is limited to a particular set of search terms.
-                  You can find these search terms here:
-                  https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
+      <div className="search-books">
+        <div className="search-books-bar">
+          <Link className="close-search" to='/'>Close</Link>
+          <div className="search-books-input-wrapper">
+            <input 
+              type="text" 
+              value={query}
+              onChange={this.onQueryUpdate} 
+              placeholder="Search by title or author"
+            />
 
-                  However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
-                  you don't find a specific author or title. Every search is limited by search terms.
-                */
-                }
-                <input 
-                  type="text" 
-                  value={query}
-                  onChange={(event) => (this.onQueryUpdate(event.target.value))} 
-                  placeholder="Search by title or author"
-                />
-
-              </div>
-            </div>
-
-            {/* Book Search Results */}
-            <div className="search-books-results">
-              <ol className="books-grid">
-                {
-                  showingBooks.map((book) => (
-                    <li key={ book.id }>
-                    <div className="book">
-                      <div className='book-top' style={{
-                        backgroundImage:`url(${book.imageLinks.thumbnail})`
-                        }}>
-                        <div className="book-shelf-changer">
-                          <select value={this.checkShelf(book, shelfBooks)} onChange={(e) => this.changeHandler(e, book, addCurrBooks, addWantBooks, addReadBooks, removeBooks)}>
-                            <option value="moved" disabled>Move to...</option>
-                            <option value="currentlyReading">Currently Reading</option>
-                            <option value="wantToRead">Want to Read</option>
-                            <option value="read">Read</option>
-                            <option value="none">None</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="book-title">{book.title}</div>
-                      <div className="book-authors">{book.authors[0]}</div>
-                    </div>
-                    </li>
-                  ))
-                }
-              </ol>
-            </div>          
           </div>
+        </div>
+
+        {/* Book Search Results */}
+        <div className="search-books-results">
+          <ol className="books-grid">
+            {
+              books.map((book) => (
+                <li key={ book.id }>
+                <Book 
+                  book={book}
+                  allBooks={allBooks}
+                  updateBook={updateBook}
+                />
+                </li>
+              ))
+            }
+          </ol>
+        </div>          
+      </div>
 		)
 	}
 }
